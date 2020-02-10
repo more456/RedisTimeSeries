@@ -25,7 +25,7 @@ void IndexInit() {
     labelsIndex = RedisModule_CreateDict(NULL);
 }
 
-void FreeLabels(void *value, size_t labelsCount){
+void FreeLabels(void *value, size_t labelsCount) {
 	Label *labels = (Label *) value;
 	for (int i = 0; i < labelsCount; ++i) {
 		RedisModule_FreeString(NULL, labels[i].key);
@@ -74,7 +74,7 @@ int parsePredicate(RedisModuleCtx *ctx, RedisModuleString *label, QueryPredicate
             // when the token is <=1 it means that we have an empty list
             retQuery->valueListCount = 0;
         } else {
-            retQuery->valueListCount = filterCount  + 1;
+            retQuery->valueListCount = filterCount + 1;
         }
         retQuery->valuesList = RedisModule_PoolAlloc(ctx, retQuery->valueListCount * sizeof(RedisModuleString*));
 
@@ -271,9 +271,9 @@ RedisModuleDict * QueryIndexPredicate(RedisModuleCtx *ctx, QueryPredicate *predi
             _intersect(ctx, prevResults, localResult);
         } else if (predicate->type == LIST_NOTMATCH) {
             _difference(ctx, prevResults, localResult);
-        } else  if (predicate->type == NCONTAINS) {
+        } else if (predicate->type == NCONTAINS) {
             _difference(ctx, prevResults, localResult);
-        } else if (predicate->type == NEQ){
+        } else if (predicate->type == NEQ) {
             _difference(ctx, prevResults, localResult);
         }
         return prevResults;
@@ -295,7 +295,7 @@ void PromoteSmallestPredicateToFront(RedisModuleCtx *ctx, QueryPredicate *index_
         unsigned int minDictSize = UINT_MAX;
         for (int i = 0; i < predicate_count; i++) {
             RedisModuleDict *currentPredicateKeys = GetPredicateKeysDict(ctx, &index_predicate[i]);
-            int currentDictSize =  (currentPredicateKeys != NULL) ? RedisModule_DictSize(currentPredicateKeys): 0;
+            int currentDictSize = (currentPredicateKeys != NULL) ? RedisModule_DictSize(currentPredicateKeys): 0;
             if (currentDictSize < minDictSize) {
                 minIndex = i;
                 minDictSize = currentDictSize;

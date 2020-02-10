@@ -52,7 +52,7 @@
  *                000010101 *            0000101 *    01 *       [-64,63] *       5 *
  *            1111100111011 *         1111100111 *   011 *     [-512,511] *    -487 *
  *        11000010001000111 *      1100001000100 *  0111 *   [-4096,4095] *   -1980 *
- *    000101100110110001111 *   0001011001101100 * 01111 * [-32768,32767] *    5740 * 
+ *    000101100110110001111 *   0001011001101100 * 01111 * [-32768,32767] *    5740 *
  * 0x00000000000186A0 11111 * 0x00000000000186A0 * 11111 *  [Min64,Max64] *  100000 *
  ************************************************************************************
  * Compression of (XOR of) doubles
@@ -76,14 +76,14 @@
  * Next, (64 - `leading` - `trailing`) bits are read and shifted left (<<) by
  * `leading` and the function returns this number^prevresult (XOR) and returned.
  * 
- ********************************************************************************* 
+ *********************************************************************************
  *      final               *   binary           * t  * l  * p * 0 * value * prev*
- *********************************************************************************                                                                          
+ *********************************************************************************
  *                        0 *                    *    *    *   * 0 *   2.2 * 2.2 *
  * (using prev params)  101 *                  1 *    *    * 0 * 1 *     2 *   3 *
  *        1 110011 01100 11 *                  1 * 51 * 12 * 1 * 1 *     2 *   3 *
- *    0x0024b33333333333 01 * 0x0024b33333333333 *    *    * 0 * 1 *  18.7 * 5.5 * 
- * 0x0024b33333333333 01011 * 0x0024b33333333333 *  0 * 10 * 1 * 1 *  18.7 * 5.5 * 
+ *    0x0024b33333333333 01 * 0x0024b33333333333 *    *    * 0 * 1 *  18.7 * 5.5 *
+ * 0x0024b33333333333 01011 * 0x0024b33333333333 *  0 * 10 * 1 * 1 *  18.7 * 5.5 *
  *********************************************************************************
  * t=trailing, l=leading, p=use of previous params, 0=xor equal zero 
  */
@@ -310,11 +310,11 @@ static ChunkResult appendFloat(CompressedChunk *chunk, double value) {
     // Current value is identical to previous value. 1 bit used to encode.
     if (xorWithPrevious == 0) {
         appendBits(bins, bit, 0, 1);
-        return CR_OK;   
+        return CR_OK;
     }
     appendBits(bins, bit, 1, 1);
 
-    u_int64_t leading  = LeadingZeros64(xorWithPrevious);
+    u_int64_t leading = LeadingZeros64(xorWithPrevious);
     u_int64_t trailing = TrailingZeros64(xorWithPrevious);
   
     // Prevent over flow of DOUBLE_LEADING
@@ -323,7 +323,7 @@ static ChunkResult appendFloat(CompressedChunk *chunk, double value) {
     }
 
     localbit_t prevLeading = chunk->prevLeading;
-    localbit_t prevTrailing = chunk->prevTrailing;  
+    localbit_t prevTrailing = chunk->prevTrailing;
     assert(leading + trailing <= BINW);
     localbit_t blockSize = BINW - leading - trailing;
     u_int32_t expectedSize = DOUBLE_LEADING + DOUBLE_BLOCK_SIZE + blockSize;
@@ -343,14 +343,14 @@ static ChunkResult appendFloat(CompressedChunk *chunk, double value) {
         expectedSize > prevBlockInfoSize) 
     {
         CHECKSPACE(chunk, prevBlockInfoSize + 1);
-        appendBits(bins, bit, 0, 1);    
+        appendBits(bins, bit, 0, 1);
         appendBits(bins, bit, xorWithPrevious >> prevTrailing, prevBlockInfoSize);
     } else {
         CHECKSPACE(chunk, expectedSize + 1);
         appendBits(bins, bit, 1, 1);
         appendBits(bins, bit, leading, DOUBLE_LEADING);
-        appendBits(bins, bit, blockSize - DOUBLE_BLOCK_ADJUST, DOUBLE_BLOCK_SIZE);            
-        appendBits(bins, bit, xorWithPrevious >> trailing, blockSize);  
+        appendBits(bins, bit, blockSize - DOUBLE_BLOCK_ADJUST, DOUBLE_BLOCK_SIZE);
+        appendBits(bins, bit, xorWithPrevious >> trailing, blockSize);
         chunk->prevLeading = leading;
         chunk->prevTrailing = trailing;
     }
@@ -362,7 +362,7 @@ ChunkResult Compressed_Append(CompressedChunk *chunk, timestamp_t timestamp, dou
     assert(chunk);
 
     if (chunk->count == 0) {
-        chunk->baseValue.d   = chunk->prevValue.d = value;
+        chunk->baseValue.d = chunk->prevValue.d = value;
         chunk->baseTimestamp = chunk->prevTimestamp = timestamp;
         chunk->prevTimestampDelta = 0;
     } else {
@@ -405,7 +405,7 @@ static u_int64_t readInteger(Compressed_Iterator *iter) {
 
     // Update iterator
     iter->prevDelta += dd;
-    return iter->prevTS = iter->prevTS + iter->prevDelta;  
+    return iter->prevTS = iter->prevTS + iter->prevDelta;
 }
 
 /* 
@@ -441,7 +441,7 @@ static double readFloat(Compressed_Iterator *iter) {
         binary_t trailing = BINW - leading - blocksize;
         xorValue = readBits(iter->chunk->data, &iter->idx, blocksize) << trailing;
         iter->prevLeading = leading;
-        iter->prevTrailing = trailing;    
+        iter->prevTrailing = trailing;
     }
 
     rv.u = xorValue ^ iter->prevValue.u;
@@ -453,7 +453,7 @@ ChunkResult Compressed_ReadNext(Compressed_Iterator *iter, timestamp_t *timestam
     assert(iter->chunk);
 
     if (iter->count >= iter->chunk->count) return CR_END;
-    
+
     if (iter->count == 0) { // First sample
         *timestamp = iter->chunk->baseTimestamp;
         *value     = iter->chunk->baseValue.d;

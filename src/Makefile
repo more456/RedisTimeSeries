@@ -1,7 +1,7 @@
 ROOT=..
 include $(ROOT)/deps/readies/mk/main
 
-#----------------------------------------------------------------------------------------------  
+#----------------------------------------------------------------------------------------------
 
 define HELP
 make setup         # install packages required for build
@@ -27,7 +27,7 @@ make test          # run tests
 make pack          # build packages (ramp & dependencies)
 endef
 
-#----------------------------------------------------------------------------------------------  
+#----------------------------------------------------------------------------------------------
 
 MK_CUSTOM_CLEAN=1
 
@@ -39,7 +39,7 @@ ifeq ($(OS),macosx)
 export PATH:=$(PATH):$(HOME)/Library/Python/2.7/bin
 endif
 
-#----------------------------------------------------------------------------------------------  
+#----------------------------------------------------------------------------------------------
 
 PREFIX ?= /usr/local
 INSTALL_LIB:=$(PREFIX)/lib
@@ -164,7 +164,7 @@ endif
 ifeq ($(TEST),)
 	$(SHOW)set -e; \
 	cd ../tests; \
-	REDISTIMESERIES=$(TARGET) python -m pytest  $(TEST_ARGS) -svv .
+	REDISTIMESERIES=$(TARGET) python -m pytest $(TEST_ARGS) -svv .
 else
 	cd ../tests; \
 	PYDEBUG=1 REDIS_VERBOSE=1 REDISTIMESERIES=$(TARGET) python -m pytest -k "${TEST}" -svv .

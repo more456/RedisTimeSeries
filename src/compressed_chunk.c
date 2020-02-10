@@ -72,7 +72,7 @@ ChunkIter_t *Compressed_NewChunkIterator(Chunk_t *chunk) {
   iter->prevTS = compChunk->baseTimestamp;
   iter->prevDelta = 0;
 
-  iter->prevValue.d = compChunk->baseValue.d;  
+  iter->prevValue.d = compChunk->baseValue.d;
   iter->prevLeading = 32;
   iter->prevTrailing = 32;
 

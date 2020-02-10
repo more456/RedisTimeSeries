@@ -50,7 +50,7 @@ typedef struct Compressed_Iterator {
   int64_t prevDelta;
 
   // value vars
-  union64bits prevValue;  
+  union64bits prevValue;
   u_int8_t prevLeading;
   u_int8_t prevTrailing;
 } Compressed_Iterator;

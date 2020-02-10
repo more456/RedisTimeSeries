@@ -53,7 +53,7 @@ timestamp_t Uncompressed_GetFirstTimestamp(Chunk_t *chunk) {
 
 ChunkResult Uncompressed_AddSample(Chunk_t *chunk, Sample *sample) {
     Chunk *regChunk = (Chunk *)chunk;
-    if (IsChunkFull(regChunk)){
+    if (IsChunkFull(regChunk)) {
         return CR_END;
     }
 

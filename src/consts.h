@@ -21,8 +21,8 @@
 #define TSDB_ERR_TIMESTAMP_OCCUPIED -2
 
 /* TS.CREATE Defaults */
-#define RETENTION_TIME_DEFAULT          0LL
-#define SAMPLES_PER_CHUNK_DEFAULT_SECS  256LL   // fills one page 4096
+#define RETENTION_TIME_DEFAULT         0LL
+#define SAMPLES_PER_CHUNK_DEFAULT_SECS 256LL  // fills one page 4096
 
 /* TS.Range Aggregation types */
 typedef enum {

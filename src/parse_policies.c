@@ -18,7 +18,7 @@ static const timestamp_t lookup_intervals[] = {
    ['d'] = 1000*60*60*24
 };
 
-static int parse_string_to_millisecs(const char *timeStr, timestamp_t *out){
+static int parse_string_to_millisecs(const char *timeStr, timestamp_t *out) {
     char should_be_empty;
     unsigned char interval_type;
     timestamp_t timeSize;

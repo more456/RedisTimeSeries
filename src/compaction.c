@@ -54,7 +54,7 @@ void SingleValueWriteContext(void *contextPtr, RedisModuleIO *io) {
     RedisModule_SaveDouble(io, context->value);
 }
 
-void SingleValueReadContext(void *contextPtr, RedisModuleIO *io){
+void SingleValueReadContext(void *contextPtr, RedisModuleIO *io) {
     SingleValueContext *context = (SingleValueContext *)contextPtr;
     context->value = RedisModule_LoadDouble(io);
 }
@@ -66,7 +66,7 @@ void *AvgCreateContext() {
     return context;
 }
 
-void AvgAddValue(void *contextPtr, double value){
+void AvgAddValue(void *contextPtr, double value) {
     AvgContext *context = (AvgContext *)contextPtr;
     context->val += value;
     context->cnt++;
@@ -90,7 +90,7 @@ void AvgWriteContext(void *contextPtr, RedisModuleIO *io) {
     RedisModule_SaveDouble(io, context->cnt);
 }
 
-void AvgReadContext(void *contextPtr, RedisModuleIO *io){
+void AvgReadContext(void *contextPtr, RedisModuleIO *io) {
     AvgContext *context = (AvgContext *)contextPtr;
     context->val = RedisModule_LoadDouble(io);
     context->cnt = RedisModule_LoadDouble(io);
@@ -104,7 +104,7 @@ void *StdCreateContext() {
     return context;
 }
 
-void StdAddValue(void *contextPtr, double value){
+void StdAddValue(void *contextPtr, double value) {
     StdContext *context = (StdContext *)contextPtr;
     ++context->cnt;
     context->sum += value;
@@ -128,7 +128,7 @@ double VarPopulationFinalize(void *contextPtr) {
 double VarSamplesFinalize(void *contextPtr) {
     StdContext *context = (StdContext *)contextPtr;
     uint64_t count = context->cnt;
-    if(count == 1) { return 0; }
+    if (count == 1) { return 0; }
     return variance(context->sum, context->sum_2, count) * count / (count - 1);
 }
 
@@ -154,7 +154,7 @@ void StdWriteContext(void *contextPtr, RedisModuleIO *io) {
     RedisModule_SaveUnsigned(io, context->cnt);
 }
 
-void StdReadContext(void *contextPtr, RedisModuleIO *io){
+void StdReadContext(void *contextPtr, RedisModuleIO *io) {
     StdContext *context = (StdContext *)contextPtr;
     context->sum = RedisModule_LoadDouble(io);
     context->sum_2 = RedisModule_LoadDouble(io);
@@ -382,11 +382,11 @@ int RMStringLenAggTypeToEnum(RedisModuleString *aggTypeStr) {
 int StringLenAggTypeToEnum(const char *agg_type, size_t len) {
 	int result = TS_AGG_INVALID;
 	char agg_type_lower[len];
-	for(int i = 0; i < len; i++){
+	for (int i = 0; i < len; i++) {
 		agg_type_lower[i] = tolower(agg_type[i]);
 	}
-	if(len == 3){
-		if (strncmp(agg_type_lower, "min", len) == 0 && len == 3){
+	if (len == 3) {
+		if (strncmp(agg_type_lower, "min", len) == 0 && len == 3) {
 			result = TS_AGG_MIN;
 		} else if (strncmp(agg_type_lower, "max", len) == 0) {
 			result = TS_AGG_MAX;
@@ -395,11 +395,11 @@ int StringLenAggTypeToEnum(const char *agg_type, size_t len) {
 		} else if (strncmp(agg_type_lower, "avg", len) == 0) {
 			result = TS_AGG_AVG;
 		}
-	} else if (len == 4){
+	} else if (len == 4) {
 		if (strncmp(agg_type_lower, "last", len) == 0) {
 			result = TS_AGG_LAST;
 		}
-	} else if (len == 5){
+	} else if (len == 5) {
 		if (strncmp(agg_type_lower, "count", len) == 0) {
 			result = TS_AGG_COUNT;
 		} else if (strncmp(agg_type_lower, "range", len) == 0) {

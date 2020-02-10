@@ -14,14 +14,14 @@ typedef struct {
     RedisModuleString *value;
 } Label;
 
-typedef enum  {
+typedef enum {
     EQ,
     NEQ,
     // Contains a label
     CONTAINS,
     // Not Contains a label
     NCONTAINS,
-    LIST_MATCH,  // List of matching predicates
+    LIST_MATCH,     // List of matching predicates
     LIST_NOTMATCH,  // List of non-matching predicates
     // REQ,
     // NREQ
