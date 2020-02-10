@@ -60,7 +60,7 @@ static Chunk *decompressChunk(CompressedChunk *compressedChunk) {
 
   ChunkIter_t *iter = Compressed_NewChunkIterator(compressedChunk, 0);
   for(uint64_t i = 0; i < numSamples; ++i) {
-    Compressed_ChunkIteratorGetNext(iter, &sample);
+    Compressed_ChunkIteratorGetNext(iter, &sample, false);
     Uncompressed_AddSample(uncompressedChunk, &sample);
   }
   Compressed_FreeChunkIterator(iter, false);
@@ -101,7 +101,10 @@ ChunkIter_t *Compressed_NewChunkIterator(Chunk_t *chunk, bool rev) {
   return (ChunkIter_t *)iter;
 }
 
-ChunkResult Compressed_ChunkIteratorGetNext(ChunkIter_t *iter, Sample* sample) {
+ChunkResult Compressed_ChunkIteratorGetNext(ChunkIter_t *iter, Sample* sample, bool rev) {
+  if (rev) {
+    return Uncompressed_ChunkIteratorGetNext(iter, sample, rev);
+  }
   return Compressed_ReadNext((Compressed_Iterator *)iter, &sample->timestamp, &sample->value);
 }
 

@@ -31,7 +31,7 @@ typedef struct ChunkFuncs {
 
     ChunkIter_t *(*NewChunkIterator)(Chunk_t *chunk, bool rev);
     void(*FreeChunkIterator)(ChunkIter_t *iter, bool rev);
-    ChunkResult(*ChunkIteratorGetNext)(ChunkIter_t *iter, Sample *sample);
+    ChunkResult(*ChunkIteratorGetNext)(ChunkIter_t *iter, Sample *sample, bool rev);
     ChunkResult(*ChunkIteratorGetPrev)(ChunkIter_t *iter, Sample *sample);
 
     size_t(*GetChunkSize)(Chunk_t *chunk);

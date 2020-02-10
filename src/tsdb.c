@@ -271,16 +271,10 @@ ChunkResult SeriesIteratorGetFirst(SeriesIterator *iterator, Sample *sample) {
     }
 
     // Skip through initial samples
-    if (iterator->reverse == NO_OPT) {
-        res = funcs->ChunkIteratorGetNext(iterator->chunkIterator, sample);
-        while (res == CR_OK && sample->timestamp < iterator->minTimestamp) {     
-            res = funcs->ChunkIteratorGetNext(iterator->chunkIterator, sample);
-        }
-    } else {
-        res = funcs->ChunkIteratorGetPrev(iterator->chunkIterator, sample);
-        while (res == CR_OK && sample->timestamp > iterator->maxTimestamp) {     
-            res = funcs->ChunkIteratorGetPrev(iterator->chunkIterator, sample);
-        }
+    res = funcs->ChunkIteratorGetNext(iterator->chunkIterator, sample, iterator->reverse);
+    while (res == CR_OK && (sample->timestamp < iterator->minTimestamp ||
+                            sample->timestamp > iterator->maxTimestamp)) {     
+        res = funcs->ChunkIteratorGetNext(iterator->chunkIterator, sample, iterator->reverse);
     }
 
     // No sample within range
@@ -300,33 +294,26 @@ void SeriesIteratorClose(SeriesIterator *iterator) {
 // move to the next chunk.
 ChunkResult SeriesIteratorGetNext(SeriesIterator *iterator, Sample *currentSample) {
     ChunkResult res;
+    bool reverse = iterator->reverse;
     ChunkFuncs *funcs = iterator->series->funcs;
     Chunk_t *currentChunk = iterator->currentChunk;
 
-    if (iterator->reverse == NO_OPT) {
-        res = funcs->ChunkIteratorGetNext(iterator->chunkIterator, currentSample);
-        if (res == CR_END) { // Reached the end of the chunk
+    res = funcs->ChunkIteratorGetNext(iterator->chunkIterator, currentSample, reverse);
+    if (res == CR_END) { // Reached the end of the chunk
+        if (reverse == false) {
             if (!RedisModule_DictNextC(iterator->dictIter, NULL, (void*)&iterator->currentChunk)||
-                funcs->GetFirstTimestamp(currentChunk) > iterator->maxTimestamp) {
+                funcs->GetFirstTimestamp(iterator->currentChunk) > iterator->maxTimestamp) {
                 return CR_END;       // No more chunks or they out of range
             }
-            funcs->FreeChunkIterator(iterator->chunkIterator, false);
-            iterator->chunkIterator = funcs->NewChunkIterator(iterator->currentChunk, NO_OPT);
-            funcs->ChunkIteratorGetNext(iterator->chunkIterator, currentSample);
-        }
-    } else { // TS.REVRANGE
-        res = funcs->ChunkIteratorGetPrev(iterator->chunkIterator, currentSample);
-        if (res == CR_END) { // Reached the end of the chunk
-            void *dictResult = (void *)TRUE;
-            dictResult = RedisModule_DictPrevC(iterator->dictIter, NULL, (void*)&iterator->currentChunk);
-            if (!dictResult ||
-                funcs->GetLastTimestamp(currentChunk) < iterator->minTimestamp) {
+        } else {
+            if (!RedisModule_DictPrevC(iterator->dictIter, NULL, (void*)&iterator->currentChunk) ||
+                funcs->GetLastTimestamp(iterator->currentChunk) < iterator->minTimestamp) {
                 return CR_END;       // No more chunks or they out of range
             }
-            funcs->FreeChunkIterator(iterator->chunkIterator, true);
-            iterator->chunkIterator = funcs->NewChunkIterator(iterator->currentChunk, REVERSE);
-            funcs->ChunkIteratorGetPrev(iterator->chunkIterator, currentSample);
         }
+        funcs->FreeChunkIterator(iterator->chunkIterator, reverse);
+        iterator->chunkIterator = funcs->NewChunkIterator(iterator->currentChunk, reverse);
+        funcs->ChunkIteratorGetNext(iterator->chunkIterator, currentSample, reverse);
     }
     if (currentSample->timestamp < iterator->minTimestamp ||
         currentSample->timestamp > iterator->maxTimestamp) {

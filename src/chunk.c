@@ -71,26 +71,21 @@ ChunkIter_t *Uncompressed_NewChunkIterator(Chunk_t *chunk, bool rev) {
     return (ChunkIter_t *)iter;
 }
 
-ChunkResult Uncompressed_ChunkIteratorGetNext(ChunkIter_t *iterator, Sample *sample) {
+ChunkResult Uncompressed_ChunkIteratorGetNext(ChunkIter_t *iterator, Sample *sample, bool rev) {
     ChunkIterator *iter = (ChunkIterator *)iterator;
-    if (iter->currentIndex < iter->chunk->num_samples) {
-        *sample = *ChunkGetSample(iter->chunk, iter->currentIndex);
-        iter->currentIndex++;
-        return CR_OK;
-    } else {
-        return CR_END;
-    }
-}
-
-ChunkResult Uncompressed_ChunkIteratorGetPrev(ChunkIter_t *iterator, Sample *sample) {
-    ChunkIterator *iter = (ChunkIterator *)iterator;
-    if (iter->currentIndex >= 0) {
+    if (rev == false) {
+        if (iter->currentIndex < iter->chunk->num_samples) {
+            *sample = *ChunkGetSample(iter->chunk, iter->currentIndex);
+            iter->currentIndex++;
+            return CR_OK;
+        }
+    } else if (iter->currentIndex >= 0) {
         *sample = *ChunkGetSample(iter->chunk, iter->currentIndex);
         iter->currentIndex--;
         return CR_OK;
-    } else {
-        return CR_END;
-    }
+    } 
+    // no more samples in the chunk
+    return CR_END;
 }
 
 void Uncompressed_FreeChunkIterator(ChunkIter_t *iter, bool rev) {
