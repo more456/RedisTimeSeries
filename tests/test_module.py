@@ -143,6 +143,11 @@ class RedisTimeseriesTests(ModuleTestCase(REDISTIMESERIES)):
 
         return agg_key
 
+    def _insert_agg_data_uniform_real_distribution(self, redis, key, ts_start, ts_end ):
+        for i in range(ts_start, ts_end):
+            assert redis.execute_command('TS.ADD', key, i, random.uniform(0.0,1.0))
+        # close last bucket
+
     @staticmethod
     def _get_series_value(ts_key_result):
         """
@@ -759,6 +764,16 @@ class RedisTimeseriesTests(ModuleTestCase(REDISTIMESERIES)):
             expected_result = [[10, '197'], [20, '297'], [30, '397'], [40, '497']]
             actual_result = r.execute_command('TS.RANGE', agg_key, 10, 50)
             assert expected_result == actual_result
+
+    def test_agg_median(self):
+        number_samples = 1000
+        with self.redis() as r:
+            self._insert_agg_data_uniform_real_distribution(r, 'test_agg_median', 1, number_samples )
+            expected_result = float(0.5)
+            actual_result = r.execute_command('TS.RANGE', 'test_agg_median', "-" , "+", "AGGREGATION", 'median', number_samples )
+            assert len(actual_result)==1
+            actual_result[0][1] = float(actual_result[0][1])
+            abs(expected_result - actual_result[0][1]) < ALLOWED_ERROR
 
     def test_agg_avg(self):
         with self.redis() as r:

@@ -184,6 +184,11 @@ double TDigestFinalize(void *contextPtr) {
     return td_quantile(context->h,0.5);
 }
 
+double TDigestFinalizeMedian(void *contextPtr) {
+    TDigestContext *context = (TDigestContext *)contextPtr;
+    return td_quantile(context->h,0.5);
+}
+
 void TDigestReset(void *contextPtr) {
     TDigestContext *context = (TDigestContext *)contextPtr;
     td_reset(context->h);
@@ -417,6 +422,17 @@ static AggregationClass aggTDigestQuantile = {
     .resetContext = TDigestReset
 };
 
+
+static AggregationClass aggTDigestMedian = {
+    .createContext = TDigestCreateContext,
+    .appendValue = TDigestAddValue,
+    .freeContext = rm_free,
+    .finalize = TDigestFinalizeMedian,
+    .writeContext = TDigestWriteContext,
+    .readContext = TDigestReadContext,
+    .resetContext = TDigestReset
+};
+
 int StringAggTypeToEnum(const char *agg_type) {
     return StringLenAggTypeToEnum(agg_type, strlen(agg_type));
 }
@@ -539,7 +555,7 @@ AggregationClass *GetAggClass(int aggType) {
         case AGG_RANGE:
             return &aggRange;
         case AGG_MEDIAN:
-            return &aggTDigestQuantile;
+            return &aggTDigestMedian;
         case AGG_TDIGEST_CDF:
             return &aggTDigestQuantile;
         case AGG_TDIGEST_QUANTILE:
