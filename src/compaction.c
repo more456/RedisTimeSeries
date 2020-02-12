@@ -170,7 +170,7 @@ void StdReadContext(void *contextPtr, RedisModuleIO *io){
 
 void *TDigestCreateContext() {
     TDigestContext *context = (TDigestContext *)malloc(sizeof(TDigestContext));
-    td_init(500,context->h);
+    td_init(500,&context->h);
     return context;
 }
 

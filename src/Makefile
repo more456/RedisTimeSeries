@@ -52,7 +52,7 @@ RMUTIL_LIBDIR=$(BINROOT)/rmutil
 LIBRMUTIL=$(RMUTIL_LIBDIR)/librmutil.a
 TDIGEST_DIR=$(ROOT)/deps/tdigest
 TDIGEST_LIBDIR=$(TDIGEST_DIR)/build/src
-LIBTDIGEST=$(TDIGEST_LIBDIR)/libtdigest.so
+LIBTDIGEST=$(TDIGEST_LIBDIR)/libtdigest_static.a
 
 #----------------------------------------------------------------------------------------------
 
@@ -74,7 +74,7 @@ CC_FLAGS = \
 	-DREDISMODULE_EXPERIMENTAL_API
 
 LD_FLAGS += 
-LD_LIBS += -lc -lm -L$(RMUTIL_LIBDIR) -lrmutil -L$(TDIGEST_LIBDIR)
+LD_LIBS += -lc -lm -L$(RMUTIL_LIBDIR) -lrmutil -L$(TDIGEST_LIBDIR) -ltdigest_static
 
 ifeq ($(OS),linux)
 SO_LD_FLAGS += -shared -Bsymbolic $(LD_FLAGS)
@@ -137,7 +137,7 @@ $(LIBRMUTIL): rmutil
 
 tdigest:
 	@echo Building $@...
-	$(SHOW)$(MAKE) -C $(ROOT)/deps/tdigest library
+	$(SHOW)$(MAKE) -C $(ROOT)/deps/tdigest library_static
 
 $(LIBTDIGEST): tdigest
 
