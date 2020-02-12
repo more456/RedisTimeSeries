@@ -8,6 +8,7 @@
 #include <math.h>           // sqrt
 #include "compaction.h"
 #include "rmutil/alloc.h"
+#include "tdigest.h"
 
 typedef struct MaxMinContext {
     double minValue;
@@ -30,6 +31,11 @@ typedef struct StdContext {
     double sum_2;   // sum of (values^2)
     u_int64_t cnt;
 } StdContext;
+
+typedef struct TDigestContext {
+    td_histogram_t* h;
+} TDigestContext;
+
 
 void *SingleValueCreateContext() {
     SingleValueContext *context = (SingleValueContext *)malloc(sizeof(SingleValueContext));
@@ -159,6 +165,38 @@ void StdReadContext(void *contextPtr, RedisModuleIO *io){
     context->sum = RedisModule_LoadDouble(io);
     context->sum_2 = RedisModule_LoadDouble(io);
     context->cnt = RedisModule_LoadUnsigned(io);
+}
+
+
+void *TDigestCreateContext() {
+    TDigestContext *context = (TDigestContext *)malloc(sizeof(TDigestContext));
+    td_init(500,context->h);
+    return context;
+}
+
+void TDigestAddValue(void *contextPtr, double value){
+    TDigestContext *context = (TDigestContext *)contextPtr;
+    td_add(context->h,value,1);
+}
+
+double TDigestFinalize(void *contextPtr) {
+    TDigestContext *context = (TDigestContext *)contextPtr;
+    return td_quantile(context->h,0.5);
+}
+
+void TDigestReset(void *contextPtr) {
+    TDigestContext *context = (TDigestContext *)contextPtr;
+    td_reset(context->h);
+}
+
+void TDigestWriteContext(void *contextPtr, RedisModuleIO *io) {
+    TDigestContext *context = (TDigestContext *)contextPtr;
+    //TODO
+}
+
+void TDigestReadContext(void *contextPtr, RedisModuleIO *io){
+     TDigestContext *context = (TDigestContext *)contextPtr;
+    //TODO
 }
 
 void rm_free(void *ptr) {
@@ -369,6 +407,16 @@ static AggregationClass aggRange = {
     .resetContext = MaxMinReset
 };
 
+static AggregationClass aggTDigestQuantile = {
+    .createContext = TDigestCreateContext,
+    .appendValue = TDigestAddValue,
+    .freeContext = rm_free,
+    .finalize = TDigestFinalize,
+    .writeContext = TDigestWriteContext,
+    .readContext = TDigestReadContext,
+    .resetContext = TDigestReset
+};
+
 int StringAggTypeToEnum(const char *agg_type) {
     return StringLenAggTypeToEnum(agg_type, strlen(agg_type));
 }
@@ -415,6 +463,14 @@ int StringLenAggTypeToEnum(const char *agg_type, size_t len) {
 		} else if (strncmp(agg_type_lower, "var.s", len) == 0) {
 			result = TS_AGG_VAR_S;
 		}
+	} else if (len == 6){
+		if (strncmp(agg_type_lower, "median", len) == 0) {
+			result = TS_AGG_MEDIAN;
+		} else if (strncmp(agg_type_lower, "td.cdf", len) == 0) {
+			result = TS_AGG_TDIGEST_CDF;
+		} else if (strncmp(agg_type_lower, "td.qtl", len) == 0) {
+			result = TS_AGG_TDIGEST_QUANTILE;
+		} 
 	}
 	return result;
 }
@@ -445,6 +501,12 @@ const char *AggTypeEnumToString(int aggType) {
             return "LAST";
         case TS_AGG_RANGE:
             return "RANGE";
+        case TS_AGG_MEDIAN:
+            return "MEDIAN";
+        case TS_AGG_TDIGEST_CDF:
+            return "TD.CDF";
+        case TS_AGG_TDIGEST_QUANTILE:
+            return "TD.QTL";
         default:
             return "Unknown";
     }
@@ -476,6 +538,12 @@ AggregationClass *GetAggClass(int aggType) {
             return &aggLast;
         case AGG_RANGE:
             return &aggRange;
+        case AGG_MEDIAN:
+            return &aggTDigestQuantile;
+        case AGG_TDIGEST_CDF:
+            return &aggTDigestQuantile;
+        case AGG_TDIGEST_QUANTILE:
+            return &aggTDigestQuantile;
         default:
             return NULL;
     }

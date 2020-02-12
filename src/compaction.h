@@ -23,6 +23,9 @@
 #define AGG_STD_S 10
 #define AGG_VAR_P 11
 #define AGG_VAR_S 12
+#define AGG_MEDIAN 13
+#define AGG_TDIGEST_CDF 14
+#define AGG_TDIGEST_QUANTILE 15
 
 
 typedef struct AggregationClass

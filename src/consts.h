@@ -40,7 +40,10 @@ typedef enum {
     TS_AGG_STD_S,
     TS_AGG_VAR_P,
     TS_AGG_VAR_S,
-    TS_AGG_TYPES_MAX // 13
+    TS_AGG_MEDIAN,
+    TS_AGG_TDIGEST_CDF,
+    TS_AGG_TDIGEST_QUANTILE,
+    TS_AGG_TYPES_MAX // 16
 } TS_AGG_TYPES_T;
 
 /* Series struct options */

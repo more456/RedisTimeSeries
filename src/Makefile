@@ -50,6 +50,9 @@ PAKCAGE_NAME ?= $(BINROOT)/redistimeseries.{os}-{architecture}.latest.zip
 SDK_DIR=$(ROOT)/deps/RedisModulesSDK
 RMUTIL_LIBDIR=$(BINROOT)/rmutil
 LIBRMUTIL=$(RMUTIL_LIBDIR)/librmutil.a
+TDIGEST_DIR=$(ROOT)/deps/tdigest
+TDIGEST_LIBDIR=$(TDIGEST_DIR)/build/src
+LIBTDIGEST=$(TDIGEST_LIBDIR)/libtdigest.so
 
 #----------------------------------------------------------------------------------------------
 
@@ -60,6 +63,7 @@ CC=gcc
 
 CC_FLAGS = \
 	-I$(SDK_DIR) \
+	-I$(TDIGEST_DIR)/src \
 	-Wall \
 	-fPIC \
 	-pedantic \
@@ -70,7 +74,7 @@ CC_FLAGS = \
 	-DREDISMODULE_EXPERIMENTAL_API
 
 LD_FLAGS += 
-LD_LIBS += -lc -lm -L$(RMUTIL_LIBDIR) -lrmutil
+LD_LIBS += -lc -lm -L$(RMUTIL_LIBDIR) -lrmutil -L$(TDIGEST_LIBDIR)
 
 ifeq ($(OS),linux)
 SO_LD_FLAGS += -shared -Bsymbolic $(LD_FLAGS)
@@ -131,9 +135,16 @@ rmutil:
 
 $(LIBRMUTIL): rmutil
 
+tdigest:
+	@echo Building $@...
+	$(SHOW)$(MAKE) -C $(ROOT)/deps/tdigest library
+
+$(LIBTDIGEST): tdigest
+
 clean:
 	-$(SHOW)[ -e $(BINDIR) ] && find $(BINDIR) -name '*.[oadh]' -type f -delete
 	-$(SHOW)$(MAKE) -C $(ROOT)/build/rmutil clean
+	-$(SHOW)$(MAKE) -C $(ROOT)/deps/tdigest clean
 	-$(SHOW)rm -f $(TARGET) $(UNITTESTS_RUNNER)
 
 -include $(CC_DEPS)
@@ -142,7 +153,7 @@ $(BINDIR)/%.o: $(SRCDIR)/%.c
 	@echo Compiling $<...
 	$(SHOW)$(CC) $(CC_FLAGS) -c $< -o $@
 
-$(TARGET): $(BIN_DIRS) $(OBJECTS) $(LIBRMUTIL)
+$(TARGET): $(BIN_DIRS) $(OBJECTS) $(LIBRMUTIL) $(LIBTDIGEST)
 	@echo Linking $@...
 	$(SHOW)$(CC) $(SO_LD_FLAGS) -o $@ $(OBJECTS) $(LD_LIBS)
 	$(SHOW)cd $(BINROOT)/..; ln -sf $(FULL_VARIANT)/$(notdir $(TARGET)) $(notdir $(TARGET))
